@@ -8,7 +8,7 @@ const app=express();
 const path=require('path');
 const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
-
+const authMiddleware=require('./middleware/authMiddleware')
 const port=8080 || process.env.PORT;
 
 //const user=require('./models/user');
@@ -28,6 +28,15 @@ const connectDB=async()=>{
 connectDB();
 app.set('view engine','ejs');
 
+app.use((req, res, next) => {
+  res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+  res.header("Expires", "-1");
+  res.header("Pragma", "no-cache");
+  next();
+});
+
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'public')));
 //console.log(__dirname);
@@ -42,17 +51,19 @@ app.get('/login',(req,res)=>{
 })
 
 app.get('/logout',(req,res)=>{
+    res.clearCookie('accessToken');
     res.redirect('/login');
-})
+});
 
 app.post('/home',[
     body('userName').trim().notEmpty().withMessage('Username is required'),
     body('email').trim().isEmail().withMessage(' Email address required'),
     body('password').trim().isLength({min :6}).withMessage('Password must be atleast 6 characters'),
     body('confirmPassword').trim().custom((value,{req})=>value===req.body.password).withMessage('Password do not match'),
-],
+],authMiddleware,
 
 async (req, res) => {
+ 
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -76,7 +87,7 @@ async (req, res) => {
       
       console.log(`user created successfully ${user}`);
 
-      res.render('home',{userName});
+      res.render('home',{user:userName});
     } catch (error) {
       console.log(error);
       res.render('error');
@@ -84,17 +95,18 @@ async (req, res) => {
   }
 );
 app.post('/login-process',async (req,res)=>{
-  console.log(req.body);
+ 
+  //console.log(req.body);
   const { email,password }=req.body;
-  console.log(password)
+  //console.log(password)
   if(!email || !password){
     return res.render("login",{error:"Please enter username or password"});
   }
  const user=await User.findOne({email});
- console.log(user);
+ //console.log(user);
   //compare password
   const isPasswordValid=await bcrypt.compare(password,user.password)
-  console.log(isPasswordValid);
+ // console.log(isPasswordValid);
   if(user && isPasswordValid)
 {
   const accessToken=jwt.sign({
@@ -106,11 +118,9 @@ app.post('/login-process',async (req,res)=>{
   },process.env.ACCESS_TOKEN_SECRET,
   {expiresIn:"1m"}
   )
+  console.log(accessToken);
   return res.cookie('accessToken', accessToken).render("home",{user:user.userName});
-
-  //return res.redirect("/home",{user:user.userName,accessToken})
-  
-}else{
+  }else{
   return res.render("login",{error: "Invalid username or password"});
 }
 
