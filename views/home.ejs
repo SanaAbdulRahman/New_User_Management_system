@@ -7,15 +7,16 @@
 </head>
 <body>
     <div class="welcome">
+        <div class="container">
         <h1>Welcome to Home page</h1>
         <% if (locals.user) { %>
-            <p>You are logged in as <%= user %></p>
+            <h3>You are logged in as <%= user %></h3>
             <a href="/logout">Logout</a>
         <% } else { %>
             <a href="/login">Login</a>
         <% } %>
     </div>
-    
+</div>
 </body>
 </html>
 

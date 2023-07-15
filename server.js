@@ -11,7 +11,8 @@ const jwt=require('jsonwebtoken');
 const expressLayout=require('express-ejs-layouts');
 const authMiddleware=require('./middleware/authMiddleware')
 const User=require('./server/models/user');
-//const User = require('./models/user');
+const flash = require('express-flash');
+const session =require('express-session')
 const router=require('./server/routes/usermanage')
 const connectDB=require('./server/config/db')
 const port=8080 || process.env.PORT;
@@ -33,7 +34,22 @@ app.use((req, res, next) => {
 
 //middlewares
 app.use(express.urlencoded({ extended: true }));
+//static files
 app.use(express.static(path.join(__dirname,'public')));
+// Express session
+app.use(
+  session({
+    secret:'secret',
+    resave:false,
+    saveUninitialized:true,
+    cookie:{
+      maxAge:1000 * 60 * 60 * 24 *7  //1 week
+    }
+  })
+);
+
+//flash messages
+app.use(flash({sessionKeyName:'flashMessage'}));
 
 //Routes
 app.get('/admin',router)
@@ -52,10 +68,10 @@ app.get('/login',(req,res)=>{
 
 app.get('/logout',(req,res)=>{
     res.clearCookie('accessToken');
-    res.redirect('/login',{admin:false});
+    res.redirect('/login');
 });
 
-app.post('/home',[
+app.post('/home',authMiddleware,[
     body('userName').trim().notEmpty().withMessage('Username is required'),
     body('email').trim().isEmail().withMessage(' Email address required'),
     body('password').trim().isLength({min :6}).withMessage('Password must be atleast 6 characters'),
@@ -94,7 +110,7 @@ async (req, res) => {
     }
   }
 );
-app.post('/login-process',authMiddleware,async (req,res)=>{
+app.post('/login-process',async (req,res)=>{
  
   //console.log(req.body);
   const { email,password }=req.body;
@@ -118,8 +134,8 @@ app.post('/login-process',authMiddleware,async (req,res)=>{
   },process.env.ACCESS_TOKEN_SECRET,
   {expiresIn:"1m"}
   )
-  console.log(accessToken);
-  return res.cookie('accessToken', accessToken).render("home",{user:user.userName});
+ // console.log(accessToken);
+  return res.cookie('accessToken', accessToken).render("home",{user:user.userName,admin:false});
   }else{
   return res.render("login",{error: "Invalid username or password",admin:false});
 }

@@ -10,6 +10,14 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String
+    },
+    createdAt:{
+    type:Date,
+    default:Date.now()
+    },
+    updatedAt:{
+        type:Date,
+        default:Date.now()
     }
 });
 // userSchema.pre('save', async function (next) {
