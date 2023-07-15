@@ -11,6 +11,8 @@ router.get('/view/:id',usermanageController.viewUser)
 router.get('/edit/:id',usermanageController.editUser)
 router.put('/edit/:id',usermanageController.editPost)
 router.delete('/edit/:id',usermanageController.deleteUser)
+router.post('/search',usermanageController.searchUser)
+
 
 
 

@@ -117,3 +117,20 @@ exports.deleteUser= async (req,res)=>{
         console.log(error);
     }
 }
+
+//Get
+//Search user data
+exports.searchUser= async (req,res)=>{
+   try {
+    let searchTerm=req.body.searchTerm;
+    const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9 ]/g, "");
+    const users= await User.find({
+        $or:[
+            {userName:{$regex:new RegExp(searchNoSpecialChar,"i")}}
+        ]
+    });
+    res.render('search',{admin:true,users})
+   } catch (error) {
+    console.log(error);
+   }
+}

@@ -61,6 +61,8 @@ app.get('/view/:id',router);
 app.get('/edit/:id',router);
 app.put('/edit/:id',router);
 app.delete('/edit/:id',router);
+app.post('/search',router);
+
 
 // app.get('/admin',(req,res)=>{
 //   res.render('index',{admin:true})
