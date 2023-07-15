@@ -12,7 +12,8 @@ const expressLayout=require('express-ejs-layouts');
 const authMiddleware=require('./middleware/authMiddleware')
 const User=require('./server/models/user');
 const flash = require('express-flash');
-const session =require('express-session')
+const session =require('express-session');
+const methodOverride=require('method-override');
 const router=require('./server/routes/usermanage')
 const connectDB=require('./server/config/db')
 const port=8080 || process.env.PORT;
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 
 //middlewares
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 //static files
 app.use(express.static(path.join(__dirname,'public')));
 // Express session
@@ -55,6 +57,11 @@ app.use(flash({sessionKeyName:'flashMessage'}));
 app.get('/admin',router)
 app.get('/add',router);
 app.post('/add',router);
+app.get('/view/:id',router);
+app.get('/edit/:id',router);
+app.put('/edit/:id',router);
+app.delete('/edit/:id',router);
+
 // app.get('/admin',(req,res)=>{
 //   res.render('index',{admin:true})
 // })
@@ -141,6 +148,7 @@ app.post('/login-process',async (req,res)=>{
 }
 
 })
+
 app.get('*',(req,res)=>{
   res.render("404",{admin:false});
 })

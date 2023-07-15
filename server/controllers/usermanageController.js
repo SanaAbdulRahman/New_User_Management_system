@@ -1,6 +1,7 @@
 //const User = require('./models/user');
 const User=require('../models/user')
 const mongoose=require('mongoose');
+
 // GET admin page
 
 // exports.dashbord = async (req,res)=>{
@@ -65,4 +66,54 @@ exports.postUser=async (req,res)=>{
     }
 
     res.redirect('/admin')
+}
+
+//GET
+//User data
+exports.viewUser=async (req,res)=>{
+    try {
+        const user=await User.findOne({_id:req.params.id})
+        res.render('user/view',{user,admin:true})
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+//GET 
+//Edit user data
+exports.editUser=async (req,res)=>{
+    try {
+        const user=await User.findOne({_id:req.params.id})
+        res.render('user/edit',{user,admin:true})
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+//PUT
+//Update user data
+exports.editPost=async (req,res)=>{
+    try {
+        await User.findByIdAndUpdate(req.params.id,{
+            userName:req.body.userName,
+            email:req.body.email,
+            updatedAt:Date.now()
+
+        });
+        await res.redirect('/edit/'+req.params.id);
+        console.log("redirected");
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+//delete
+//Delete user data
+exports.deleteUser= async (req,res)=>{
+    try {
+        await User.deleteOne({_id:req.params.id});
+        res.redirect('/admin')
+    } catch (error) {
+        console.log(error);
+    }
 }
