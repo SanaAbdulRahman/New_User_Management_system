@@ -10,7 +10,8 @@ const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
 const expressLayout=require('express-ejs-layouts');
 const authMiddleware=require('./middleware/authMiddleware')
-const User = require('./models/user');
+const User=require('./server/models/user');
+//const User = require('./models/user');
 const router=require('./server/routes/usermanage')
 const connectDB=require('./server/config/db')
 const port=8080 || process.env.PORT;
@@ -36,6 +37,8 @@ app.use(express.static(path.join(__dirname,'public')));
 
 //Routes
 app.get('/admin',router)
+app.get('/add',router);
+app.post('/add',router);
 // app.get('/admin',(req,res)=>{
 //   res.render('index',{admin:true})
 // })
