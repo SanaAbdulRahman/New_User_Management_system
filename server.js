@@ -8,26 +8,21 @@ const app=express();
 const path=require('path');
 const bcrypt=require('bcryptjs');
 const jwt=require('jsonwebtoken');
+const expressLayout=require('express-ejs-layouts');
 const authMiddleware=require('./middleware/authMiddleware')
+const User = require('./models/user');
+const router=require('./server/routes/usermanage')
+const connectDB=require('./server/config/db')
 const port=8080 || process.env.PORT;
 
-//const user=require('./models/user');
-const User = require('./models/user');
-const connectDB=async()=>{
-    try{
-        await mongoose.connect('mongodb://127.0.0.1:27017/UserDB',{
-            useNewUrlParser:true,
-            useUnifiedTopology:true
-        });
-        console.log("Connected to mongoDB")
-    }catch(error){
-        console.log(error);
-        process.exit(1);
-    }
-}
 connectDB();
+
+//Templating engine
+app.use(expressLayout);
+app.set('layout','./layout/main');
 app.set('view engine','ejs');
 
+//Cache control
 app.use((req, res, next) => {
   res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
   res.header("Expires", "-1");
@@ -35,24 +30,26 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
+//middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'public')));
-//console.log(__dirname);
 
-
+//Routes
+app.get('/admin',router)
+// app.get('/admin',(req,res)=>{
+//   res.render('index',{admin:true})
+// })
 
 app.get('/',(req,res)=>{
-    res.render('register');
+    res.render('register',{admin:false});
 })
 app.get('/login',(req,res)=>{
-    res.render('login')
+    res.render('login',{admin:false})
 })
 
 app.get('/logout',(req,res)=>{
     res.clearCookie('accessToken');
-    res.redirect('/login');
+    res.redirect('/login',{admin:false});
 });
 
 app.post('/home',[
@@ -60,21 +57,21 @@ app.post('/home',[
     body('email').trim().isEmail().withMessage(' Email address required'),
     body('password').trim().isLength({min :6}).withMessage('Password must be atleast 6 characters'),
     body('confirmPassword').trim().custom((value,{req})=>value===req.body.password).withMessage('Password do not match'),
-],authMiddleware,
+],
 
 async (req, res) => {
  
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.render('register', { errors: errors.array() });
+        return res.render('register', { errors: errors.array(),admin:false });
       }
 
       const { userName, email, password } = req.body;
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.render('register', { errors: [{ msg: 'Email already exists' }] });
+        return res.render('register', { errors: [{ msg: 'Email already exists' }],admin:false });
       }
 
       const hashedPassword=await bcrypt.hash(password,10);
@@ -87,20 +84,20 @@ async (req, res) => {
       
       console.log(`user created successfully ${user}`);
 
-      res.render('home',{user:userName});
+      res.render('home',{user:userName,admin:false});
     } catch (error) {
       console.log(error);
-      res.render('error');
+      res.render('error',{admin:false});
     }
   }
 );
-app.post('/login-process',async (req,res)=>{
+app.post('/login-process',authMiddleware,async (req,res)=>{
  
   //console.log(req.body);
   const { email,password }=req.body;
   //console.log(password)
   if(!email || !password){
-    return res.render("login",{error:"Please enter username or password"});
+    return res.render("login",{error:"Please enter username or password",admin:false});
   }
  const user=await User.findOne({email});
  //console.log(user);
@@ -121,11 +118,13 @@ app.post('/login-process',async (req,res)=>{
   console.log(accessToken);
   return res.cookie('accessToken', accessToken).render("home",{user:user.userName});
   }else{
-  return res.render("login",{error: "Invalid username or password"});
+  return res.render("login",{error: "Invalid username or password",admin:false});
 }
 
 })
-
+app.get('*',(req,res)=>{
+  res.render("404",{admin:false});
+})
 app.listen(port, ()=>{
     console.log(`Server is running on port : ${port}`);
 })
