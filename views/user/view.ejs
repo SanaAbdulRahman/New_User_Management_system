@@ -1,0 +1,64 @@
+<div class="container">
+    <div class="d-flex justify-content-between flex-wrap flex-md nowrap align-items-center mb-3 border-bottom">
+      <h1 class="h2"><%= user.userName %></h1>
+      <div class="btn-toolbar mb-2 mb-md 0">
+        <div class="btn-group me-2">
+         
+        </div>
+      </div>
+    </div>
+
+    <div class="col py-3">
+
+        <div class="row">
+          <div class="col">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item active"><%= user.userName  %></li>
+              </ol>
+            </nav>
+          </div>
+          <div class="col text-end fw-lighter">
+            <b>Last Updated <%= new Date(user.updatedAt).toUTCString() %> </b>
+            <!-- <b>UserId:</b> <%= user._id %> -->
+          </div>
+        </div>
+      
+      </div>
+      
+      <ul class="list-group">
+      
+        <li class="list-group-item"> 
+          <div class="row">
+            <div class="col" style="max-width: 140px"> <b>Name:</b></div>
+            <div class="col"><%= user.userName %> </div>
+          </div>
+        </li>        
+        <li class="list-group-item"> 
+          <div class="row">
+            <div class="col" style="max-width: 140px"> <b>Email:</b></div>
+            <div class="col"><%= user.email %></div>
+          </div>
+        </li>
+      
+               <li class="list-group-item"> 
+          <div class="row">
+            <div class="col" style="max-width: 140px"> <b>Date Created:</b></div>
+            <div class="col"><%= user.createdAt %></div>
+          </div>
+        </li>
+      
+        <li class="list-group-item"> 
+          <div class="row">
+            <div class="col" style="max-width: 140px"> <b>Date Modified:</b></div>
+            <div class="col"><%= user.updatedAt %></div>
+          </div>
+        </li>
+      
+      </ul>
+
+
+
+
+</div>
